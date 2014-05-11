@@ -29,19 +29,19 @@ $reg_row_type_option_answer_analysis;
 $reg_row_type_answer_analysis;
 
 //space befoer can exist or not.
-$reg_question4role = '^(?: *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?).+';
-$reg_option4role = '^(?: *[A-F][\.:]| *[0-9]\)|[A-F][^A-F\.:]).+';
+$reg_question4role = '^ *(?:[0-9]+ *[\.:]|第[0-9]+题 *[\.:]|第[0-9]+题 *[^\.:]|< *[0-9]+ *> *[\.:]).+';
+$reg_option4role = '^(?: *[A-Fa-f][\.:]| *[0-9]\)|[A-Fa-f][^A-Fa-f\.:]).+';
 $reg_answer4role = '^ *(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*(?::.+?|[^:].+?)';
 $reg_analysis4role = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+|[^:].+)';
 
 //space must be placed before question,option,answer for split.
 $reg_question4split = ' *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?';
-$reg_option4split = '[A-F][\.:]|[0-9]\)|  *[A-F]|^[A-F]';
+$reg_option4split = '[A-Fa-f][\.:]|[0-9]\)|  *[A-Fa-f]|^[A-Fa-f]';
 $reg_answer4split = ' (?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*.*?';//[A-F√×T]
 $reg_analysis4split = ' *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+?|[^:].+?)';
 
-$reg_question4replace = '^ *[0-9]+.*?\.|^ *第[0-9]+题[ :.]';
-$reg_option4replace = '^ *[A-F][\.:]*|^ *[0-9]\)';
+$reg_question4replace = '^ *(?:[0-9]+ *[\.:]|第[0-9]+题 *[\.:]|第[0-9]+题 *[^\.:]|< *[0-9]+ *> *[\.:])';
+$reg_option4replace = '^ *[A-Fa-f][\.:]*|^ *[0-9]\)';
 $reg_answer4replace = '^ *(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*:*';
 $reg_analysis4replace = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*:*';
 
@@ -80,18 +80,16 @@ function get_role_by_row($row){
 //convert unregular char to specific char to easy regular expression
 function pre_char_conv($arr){
     $search = array(
-        "　",        "：",        "．",        "、",               "（",
+        "　",        "：",        "．",                       "（",//"、",
         "）",        "ａ",        "ｂ",        "ｃ",        "ｄ",        "ｅ",
         "ｆ",        "Ａ",        "Ｂ",        "Ｃ",        "Ｄ",        "Ｅ",
-        "Ｆ",        "a",        "b",        "c",        "d",        "e",
-        "f",        "\t",        '【',        '】',        "\r",        '０',
+        "Ｆ",        "\t",        '【',        '】',        "\r",        '０',
         '１',        '２',        '３',        '４',        '５',        '６',
         '７',        '８',        '９',
     );
     $replace = array(
-        "",        ":",        ".",        ".",                "(",
+        "",        ":",        ".",                        "(",//".",
         ")",        "A",        "B",        "C",        "D",        "E",
-        "F",        "A",        "B",        "C",        "D",        "E",
         "F",        "A",        "B",        "C",        "D",        "E",
         "F",        "",        "[",        "]",        "",        '0',
         '1',        '2',        '3',        '4',        '5',        '6',
@@ -106,9 +104,9 @@ function pre_char_conv($arr){
         }
         $row = str_replace($search, $replace, $row);
 /*
-        //if row begin with [A-F] or [0-9]+, dot will be followed.
-        if(preg_match('/^ *[A-F]/', $row)){
-	    if(!preg_match('/^ *[A-F]\./', $row)){
+        //if row begin with [A-Fa-f] or [0-9]+, dot will be followed.
+        if(preg_match('/^ *[A-Fa-f]/', $row)){
+	    if(!preg_match('/^ *[A-Fa-f]\./', $row)){
                 $row = preg_replace('/^( *[A-Z])/', '${1}.', $row);
 	    }
         }
@@ -132,39 +130,39 @@ function pre_treat_rows($arr){
     $arr_new = array();
     for($i=0; $i < count($arr); $i++){
         $row = $arr[$i];
-        //remove bracket like【本题考点】.
-        //$row = preg_replace('/ *【(.*)】/', '$1', $row);
+        ;
+        $row = preg_replace('/^ *([0-9]+|第[0-9]+题|< *[0-9]+ *>) *、/', '${1}.', $row);
         //for Non-Breaking Space in HTML 
         $row = preg_replace('/\xC2\xA0/',' ',$row);
         // A B C D
         //1-5 CABAA
-        $row = preg_replace('/ *[A-F] +[A-F] +[A-F] +[A-F]/', '', $row);
+        $row = preg_replace('/ *[A-Fa-f] +[A-Fa-f] +[A-Fa-f] +[A-Fa-f]/', '', $row);
         //for answer like:
         //1-5 CABAA
         //5-10 ADBCB
         $row = preg_replace('/ *([0-9]+-[0-9]+)/','答案汇总$1',$row);
         //1B 2B 3D 4B 5A 6B 7C 8B 9D 10C
-        //(?:[0-9]+ *\.* *(?:正确|错误|[A-F√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-F√×对错])+ *){1,}
-        $row = preg_replace('/((?:[0-9]+ *\.* *(?:正确|错误|[A-Fx√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fx√×对错])+ *){2,})/','答案$1',$row);
-        //if(preg_match('/^ *(?:[0-9]+\.*[A-F] *)(?:[0-9]+\.*[A-F] *){1,}(?:[0-9]+\.*[A-F] *)$/', $row, $reg)){
+        //(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-f√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-f√×对错])+ *){1,}
+        $row = preg_replace('/((?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-fx√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-fx√×对错])+ *){2,})/','答案$1',$row);
+        //if(preg_match('/^ *(?:[0-9]+\.*[A-Fa-f] *)(?:[0-9]+\.*[A-Fa-f] *){1,}(?:[0-9]+\.*[A-Fa-f] *)$/', $row, $reg)){
         //    $row = '答案汇总'.$row;
         //}
         //2.AC
-        $row = preg_replace('/^ *([0-9]+ *\.* *[A-F]+)$/','答案$1',$row);
-        //$row = preg_replace('/^ *([0-9]+ *\.* *[A-F]+)'.$reg_analysis4split.'/','答案$1',$row);
-        if(preg_match('/^ *([0-9]+ *\.* *[A-F]+)'.$reg_analysis4split.'/',$row, $reg)){
+        $row = preg_replace('/^ *([0-9]+ *\.* *[A-Fa-f]+)$/','答案$1',$row);
+        //$row = preg_replace('/^ *([0-9]+ *\.* *[A-Fa-f]+)'.$reg_analysis4split.'/','答案$1',$row);
+        if(preg_match('/^ *([0-9]+ *\.* *[A-Fa-f]+)'.$reg_analysis4split.'/',$row, $reg)){
             $row = '答案'.$row;
         }
         //for all content of row are blank.
         $row = preg_replace('/^  * $/','',$row);
         //for just only one style of row that have string (单项选择题)
         $row = preg_replace('/\(单项选择题\)/', '', $row);
-        //您选择的答案为:[空A-F]+
-        $row = preg_replace('/您选择的答案为 *: *[空A-F]+/', '', $row);
+        //您选择的答案为:[空A-Fa-f]+
+        $row = preg_replace('/您选择的答案为 *: *[空A-Fa-f]+/', '', $row);
         //本题得分:0
         $row = preg_replace('/本题得分 *: *[0-9]+/', '', $row);
         //[您的答案]:空
-        $row = preg_replace('/\[*您的答案\]* *: *[空A-F]+/', '', $row);
+        $row = preg_replace('/\[*您的答案\]* *: *[空A-Fa-f]+/', '', $row);
         //abandon blank row
         if(mb_strlen($row) == 0){
             continue;
@@ -322,12 +320,12 @@ function split_answer_analysis($row, &$arr_new){
     }
 }
 function split_option($row, &$arr_new){
-    //$reg_option4split = '[A-F]\.|[0-9]\)|  *[A-F]|^[A-F]';
+    //$reg_option4split = '[A-Fa-f]\.|[0-9]\)|  *[A-Fa-f]|^[A-Fa-f]';
     global $reg_option4split;
     $type = 0;
     $max_cnt = 0;
     if(preg_match_all('/'.$reg_option4split.'/', $row, $reg)){
-        if(preg_match_all('/[A-F]\./', $row, $reg)){
+        if(preg_match_all('/[A-Fa-f]\./', $row, $reg)){
             if($max_cnt < count($reg[0])){
                 $max_cnt = count($reg[0]);
                 $type = 0;
@@ -339,7 +337,7 @@ function split_option($row, &$arr_new){
                 $type = 1;
             }
         }
-        if(preg_match_all('/^[A-F]|  *[A-F]/', $row, $reg)){
+        if(preg_match_all('/^[A-Fa-f]|  *[A-Fa-f]/', $row, $reg)){
             if($max_cnt < count($reg[0])){
                 $max_cnt = count($reg[0]);
                 $type = 2;
@@ -355,12 +353,12 @@ function split_option($row, &$arr_new){
     {
     case 0:
         $cnt = $max_cnt;
-        //$pattern = '^ *([A-F]\..*?) *([A-F]\..*?) *([A-F]\..*?) *([A-F]\..*?)';
+        //$pattern = '^ *([A-Fa-f]\..*?) *([A-Fa-f]\..*?) *([A-Fa-f]\..*?) *([A-Fa-f]\..*?)';
         //$replace = '$1\n$2\n$3\n$4';
-        $pattern = '^ *([A-F]\..*?)';
+        $pattern = '^ *([A-Fa-f]\..*?)';
         $replace = '$1';
         for($i=1; $i<$cnt; $i++){
-            $pattern = $pattern.' *([A-F]\..*?)';
+            $pattern = $pattern.' *([A-Fa-f]\..*?)';
             $replace = $replace.'\n$'.($i+1);
         }
         //echo $pattern.'<br>'.$replace.'<br>';
@@ -385,12 +383,12 @@ function split_option($row, &$arr_new){
     break;
     case 2:
         $cnt = $max_cnt;
-        //$pattern = '^ *([A-F].*?) *([A-F].*?) *([A-F].*?) *([A-F].*?)';
+        //$pattern = '^ *([A-Fa-f].*?) *([A-Fa-f].*?) *([A-Fa-f].*?) *([A-Fa-f].*?)';
         //$replace = '$1\n$2\n$3\n$4';
-        $pattern = '^ *([A-F].*?)';
+        $pattern = '^ *([A-Fa-f].*?)';
         $replace = '$1';
         for($i=1; $i<$cnt; $i++){
-            $pattern = $pattern.' *([A-F].*?)';
+            $pattern = $pattern.' *([A-Fa-f].*?)';
             $replace = $replace.'\n$'.($i+1);
         }
         //echo $pattern.'<br>'.$replace.'<br>';
@@ -410,7 +408,7 @@ function split_option($row, &$arr_new){
     //$row = "A.社会文明水平B.社会经济制度C.市场发达程度D.科技发展水平";
     //$row = "  A.社会文明水平B.社会经济制度 C.社会经济制度 ";
     //$row = "   1)生产职能  3)fd   2)反映B.监督职能";
-    //blank before [A-F] is needed.
+    //blank before [A-Fa-f] is needed.
     //$row = "A积累性支出 B转移性支出 C补偿性支出 D购买性支出";
 }
 function split_option_answer_analysis($row, &$arr_new){
@@ -631,8 +629,8 @@ function split_question_type1($row, &$arr_new){
     global $reg_answer4split;
     global $reg_analysis4split;
     //$reg_question4split = ' *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?';
-    //$reg_option4split = '[A-F][\.:]|[0-9]\)|  *[A-F]|^[A-F]';
-    //$reg_answer4split = '(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|正确答案|答案|本题正确答案为|答案)\]*.*?[A-F√×T]';
+    //$reg_option4split = '[A-Fa-f][\.:]|[0-9]\)|  *[A-Fa-f]|^[A-Fa-f]';
+    //$reg_answer4split = '(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|正确答案|答案|本题正确答案为|答案)\]*.*?[A-Fa-f√×T]';
     //$reg_analysis4split = '\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*.+?';
     $isok = true;
     $opt_cnt = -1;
@@ -970,12 +968,12 @@ function post_treat_rows(&$arr){
         $row = $arr[$i];
         //for just only one style of row that have string (单项选择题)
         $row = preg_replace('/\(单项选择题\)/', '', $row);
-        //您选择的答案为:[空A-F]+
-        $row = preg_replace('/您选择的答案为 *: *[空A-F]+/', '', $row);
+        //您选择的答案为:[空A-Fa-f]+
+        $row = preg_replace('/您选择的答案为 *: *[空A-Fa-f]+/', '', $row);
         //本题得分:0
         $row = preg_replace('/本题得分 *: *[0-9]+/', '', $row);
         //[您的答案]:空
-        $row = preg_replace('/\[*您的答案\]* *: *[空A-F]+/', '', $row);
+        $row = preg_replace('/\[*您的答案\]* *: *[空A-Fa-f]+/', '', $row);
         //[单选][多选][判断]
         $row = preg_replace('/(\[ *(?:单 *选|多 *选|判 *断) *\]) *$/', '', $row);
         //abandon blank row
@@ -991,9 +989,9 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
     global $reg_analysis4replace;
     $search = array ();
     $replace = array ();
-    array_push ( $search, '\( *([A-FT]+) *\)' ); // √×
+    array_push ( $search, '\( *([A-Fa-fT]+) *\)' ); // √×
     array_push ( $replace, '()' );
-    array_push ( $search, '([A-FT]+)$' ); // √×
+    array_push ( $search, '([A-Fa-fT]+)$' ); // √×
     array_push ( $replace, '' );
     for($i = $start; $i < $end; $i ++) {
         $row_tmp = $arr [$i];
@@ -1042,8 +1040,8 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
             $row_tmp = preg_replace ( '/(×|x|错误|错)/', 'F', $row_tmp );
             // case1:the row begin with 答案汇总 means that is a group of answer.
             if (preg_match ( '/^答案汇总/', $row_tmp, $matches )) {
-                // if(preg_match('/[0-9]+-[0-9]+[A-F]+/', $row_tmp)){
-                if (mb_preg_match_all ( '/[A-FT]/', $row_tmp, $matches )) { // √×
+                // if(preg_match('/[0-9]+-[0-9]+[A-Fa-f]+/', $row_tmp)){
+                if (mb_preg_match_all ( '/[A-Fa-fT]/', $row_tmp, $matches )) { // √×
                                                                             // echo '<br>row_tmp:'.$row_tmp;
                                                                             // echo '<br>matches:';print_r($matches);
                     for($k = 0; $k < count ( $matches ); $k ++) {
@@ -1060,13 +1058,13 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                 continue;
             } 
             else 
-            if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-FT]+) *){2,}/', $row_tmp, $matches )){
+            if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-Fa-fT]+) *){2,}/', $row_tmp, $matches )){
                 // echo 'in function find and split answer.<br>';
                 $max_cnt = 12;
                 $j = $max_cnt;
-                if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-FT]+) *){2,}/', $row_tmp, $matches )) {
+                if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-Fa-fT]+) *){2,}/', $row_tmp, $matches )) {
                     for(; $j > 1; $j --) {
-                        if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-FT]+) *){' . $j . '}/', $row_tmp, $matches )) {
+                        if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-Fa-fT]+) *){' . $j . '}/', $row_tmp, $matches )) {
                             break;
                         }
                     }
@@ -1074,7 +1072,7 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                 if ($j == $max_cnt) {
                     echo_error ( 'not found answer seperated by index.', 'find_split_answer 2' );
                 } else {
-                    $one_case = '(?:[0-9]+ *\.* *([A-FT]+) *)';
+                    $one_case = '(?:[0-9]+ *\.* *([A-Fa-fT]+) *)';
                     $pattern = '^.*?' . $one_case;
                     $replace = '$1';
                     for($k = 1; $k < $j; $k ++) {
@@ -1092,7 +1090,7 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                     }
                 }
             }else {
-                if (mb_preg_match_all ( '/[A-FT]/', $row_tmp, $matches )) {
+                if (mb_preg_match_all ( '/[A-Fa-fT]/', $row_tmp, $matches )) {
                     // echo '<br>row_tmp:'.$row_tmp;
                     // echo '<br>matches:';print_r($matches);
                     for($k = 0; $k < count ( $matches ); $k ++) {
@@ -1184,7 +1182,7 @@ function get_and_check_roles(&$arr){
                         $row_tmp = preg_replace('/(√|正确|对)/','T',$row_tmp);
                         $row_tmp = preg_replace('/(×|x|错误|错)/','F',$row_tmp);
                         //echo '$row_tmp:'.$row_tmp.'<br>';
-                        if(mb_preg_match_all('/[A-FT]/', $row_tmp, $matches)){
+                        if(mb_preg_match_all('/[A-Fa-fT]/', $row_tmp, $matches)){
                             $str_tmp = '';
                             for($k=0; $k<count($matches); $k++){
                                 $str_tmp = $str_tmp.mb_substr($row_tmp, $matches[$k], 1);
@@ -1228,24 +1226,13 @@ function get_and_check_roles(&$arr){
 //$global_role2index['analysis'] = 4;
 //$global_role2index['unknown'] = 5;
 //$reg_question4role = '^ *[0-9]+.*?\..+|^ *第[0-9]+题';
-/*
-$reg_question4role = '^(?: *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?).+';
-$reg_option4role = '^(?: *[A-F][\.:]| *[0-9]\)|[A-F][^A-F\.:]).+';
-$reg_answer4role = '^(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*.*?[A-F√×T]';
-$reg_analysis4role = '^\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+|[^:].+)';
-
-$reg_question4split = ' *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?';
-$reg_option4split = '[A-F][\.:]|[0-9]\)|  *[A-F]|^[A-F]';
-$reg_answer4split = '(?:[0-9]+\.)*\[*(?:参考答案|正确答案|标准答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*.*?[A-F√×T]';
-$reg_analysis4split = '\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+?|[^:].+?)';
-*/
 function array_retreat_rows(&$arr){
     global $reg_question4replace;
     global $reg_option4replace;
     global $reg_answer4replace;
     global $reg_analysis4replace;
-    $search = array('A', 'B', 'C', 'D', 'E', 'F', '√', '×');
-    $replace = array('1', '2', '3', '4', '5', '6', 'T', 'F');
+    $search = array('A', 'B', 'C', 'D', 'E', 'F', 'a', 'b', 'c', 'd', 'e', 'f', '√', '×');
+    $replace = array('1', '2', '3', '4', '5', '6', '1', '2', '3', '4', '5', '6', 'T', 'F');
     
     global $answer_in_question_multi_choice;
     global $answer_in_question_single_choice;

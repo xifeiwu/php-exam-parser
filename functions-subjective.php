@@ -6,16 +6,8 @@ mb_internal_encoding ( 'UTF-8' );
 $global_role2index['statement'] = 0;
 $global_index2role[0] = 'statement';
 $row_type_statement;
-$reg_statement4role = '^ *\[综合题.*?\]';
-/*
-function replace_option_prefix(&$arr){
-    for($i=0; $i<count($arr); $i++){
-        if(preg_match('/^ *([0-9]+)\) *\./', $row, $reg)){
-            $row = preg_replace('/^ *([0-9]+)\) *\./', '$1.', $row);
-        }
-    }
-}
-*/
+$reg_statement4role = '^ *\[综合题.*?\].+';
+
 //get the role of row [questin|option|anwser|analysis]
 function get_role_by_row_subjective($row){
     global $reg_statement4role;
