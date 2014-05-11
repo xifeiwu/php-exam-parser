@@ -785,7 +785,21 @@ function merge_rows($arr){
         //echo 'in merge rows:'.$cur_row.'['.$cur_role.']<br>';
         //如果本行是unknown，不论下一行是否unknown，将这两行合并，并将preserve_row加入arr_new.
         if($cur_role == "unknown"){
-            if($next_role == "unknown"){
+            if($next_role == "unknown"){                
+                //if next row and next-next row can merge, it will be considered first.
+                //1.
+                //<1>、
+                //【答案】 A
+                if(get_role_by_row($next_row.$next_next_row) != "unknown"){
+                    if($preserve_row != ''){
+                        $arr_new[$j++] = $preserve_row;
+                   	    echo_notice('insert preserve_row:'.$preserve_row, 'merge_rows1');
+                        $preserve_row = '';
+                    }
+                    $preserve_row = $preserve_row.$next_row.$next_next_row;
+                    $i+=2;                    
+                }
+                else                
                 if(get_role_by_row($cur_row.$next_row) != "unknown"){
                     if($preserve_row != ''){
                         $arr_new[$j++] = $preserve_row;
@@ -865,6 +879,7 @@ function merge_rows($arr){
             //echo '$cur_row'.$cur_row.'<br>';
             $rows_follow_analysis = $cur_row;
             $find_rows = false;
+            //if next row and next-next row can merge, it will be considered first.
             while(($next_role == 'unknown') && (get_role_by_row($next_row.$next_next_row) == "unknown")){
             	if($preserve_row != ''){
             		$arr_new[$j++] = $preserve_row;
