@@ -1,0 +1,167 @@
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 18px;
+}
+.demo-box {
+  width: 60%;
+  text-align: left;
+  margin: 2em auto;
+  background: white;
+  border: 1px #bbb solid;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  -webkit-box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+  -moz-box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+  box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.25);
+  padding: 1em 2em 2em;
+}
+.header {
+  padding-bottom: 9px;
+  margin: 20px 0 30px;
+  border-bottom: 1px solid #ccc;
+}
+.header h2 {
+    -webkit-border-radius: 0 0 4px 4px;
+    -moz-border-radius: 0 0 4px 4px;
+    border-radius: 0 0 4px 4px;
+    background-color: #f8f8f8;
+    background-color: #f9f9f9;
+    background-image: -moz-linear-gradient(top, #f5f5f5, #ffffff);
+    background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#ffffff));
+    background-image: -webkit-linear-gradient(top, #f5f5f5, #ffffff);
+    background-image: -o-linear-gradient(top, #f5f5f5, #ffffff);
+    background-image: linear-gradient(to bottom, #f5f5f5, #ffffff);
+    background-repeat: repeat-x;
+    margin: 0;
+    padding: 10px 12px;
+    text-align: center;
+}
+.header .view_result {
+    margin: 0;
+    padding: 0px 10px;
+    text-align: right;
+    font-size: 12px;
+}
+.index {
+    width: 60%;
+    /*border: 1px solid red;*/
+    margin: 0px auto;
+}
+textarea
+{
+width:100%;
+}
+.statement {
+    font-weight: bold;
+    margin-top: 1.5em;
+}
+.question {
+    font-weight: bold;
+    margin-top: 1em;
+    margin-left: 1em;
+    text-indent: -1em;  
+}
+.question:first-line {
+}
+.question .type{
+font-weight: normal;
+color:#888;
+}
+.option {
+    font-style: italic;
+    margin-left: 3em;
+    color: blue;
+    text-indent: -1em;
+} 
+.answer {
+text-decoration: underline;
+}
+.analysis {
+    margin-left: 3em;
+    color: green;
+    text-indent: -3em;  
+}
+.unknown {
+    background-color: red;
+}
+.question_type {
+    color: green;
+}
+.index-form {
+    width: 100%;
+    margin: 0px auto;
+}
+.footer {
+    padding-top: 15px;
+    font-weight: bold;
+    margin: 10px 0px 8px 0px;
+    border-top: 1px solid #ccc;
+}
+.footer .footer_button{
+    width: 80%;
+    font-weight: bold;
+    margin: 0px auto;
+    heigth: auto;
+}
+.footer .footer_button .ok{
+    width:15em;
+    font-weight: bold;
+    font-size: 16px;
+    margin-right:30px;
+}
+.footer .footer_button .back{
+    width:15em;
+    font-weight: bold;
+    font-size: 16px;
+}
+.preview {
+	width:15em;
+    font-weight: bold;
+    font-size: 16px;
+    margin-right:50px;
+}
+.test_view {
+    width:15em;
+    font-weight: bold;
+    font-size: 12px;
+}
+#notice-title {
+    font-weight: bold;
+    text-align: center;
+    background:#E6B18C;
+    width:100%;
+    color:#7455E8;
+    font: tahoma;
+    display:block;
+    text-decoration:none;
+    margin: 1px;
+}
+#notice-content {
+    padding-left: 1em;    
+    font:tahoma;
+    color:#F26D4D;
+    background:#E6E9FF;
+    margin:0;
+}
+
+#notice-content .element .title{
+    text-indent: -1em;
+    font-weight: bold;
+}
+.index-type {
+	vertical-align: bottom;	
+    margin: 0px auto;
+    margin-bottom:5px;
+}
+.index-type .noitce{
+    color: red;
+}
+.exam-type{
+    font-size: 25px;
+    background-color: silver;
+}
+.exam-type option{
+    font-size: 25px;
+    background-color: silver;
+}

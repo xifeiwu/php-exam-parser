@@ -1,0 +1,194 @@
+一、安装mbstring
+[root@sil-server15 php.d]# rpm -ql php-mbstring
+package php-mbstring is not installed
+[root@sil-server15 php.d]# yum^Chp-mbstring
+[root@sil-server15 php.d]# vi /var/log/php_errors.log 
+[root@sil-server15 php.d]# ll /usr/lib64/php/modules/ | grep mbstring
+[root@sil-server15 php.d]# yum install php-mbstring
+Loaded plugins: fastestmirror, refresh-packagekit, security
+Loading mirror speeds from cached hostfile
+epel/metalink                                                                                              | 4.8 kB     00:00     
+ * base: mirrors.yun-idc.com
+ * epel: mirrors.yun-idc.com
+ * extras: mirrors.yun-idc.com
+ * updates: mirrors.yun-idc.com
+base                                                                                                       | 3.7 kB     00:00     
+epel                                                                                                       | 4.4 kB     00:00     
+extras                                                                                                     | 3.4 kB     00:00     
+updates                                                                                                    | 3.4 kB     00:00     
+Setting up Install Process
+Resolving Dependencies
+--> Running transaction check
+---> Package php-mbstring.x86_64 0:5.3.3-27.el6_5 will be installed
+--> Finished Dependency Resolution
+
+Dependencies Resolved
+
+==================================================================================================================================
+ Package                          Arch                       Version                            Repository                   Size
+==================================================================================================================================
+Installing:
+ php-mbstring                     x86_64                     5.3.3-27.el6_5                     updates                     455 k
+
+Transaction Summary
+==================================================================================================================================
+Install       1 Package(s)
+
+Total download size: 455 k
+Installed size: 2.1 M
+Is this ok [y/N]: y
+Downloading Packages:
+php-mbstring-5.3.3-27.el6_5.x86_64.rpm                                                                     | 455 kB     00:00     
+Running rpm_check_debug
+Running Transaction Test
+Transaction Test Succeeded
+Running Transaction
+  Installing : php-mbstring-5.3.3-27.el6_5.x86_64                                                                             1/1 
+warning: /etc/php.d/mbstring.ini created as /etc/php.d/mbstring.ini.rpmnew
+  Verifying  : php-mbstring-5.3.3-27.el6_5.x86_64                                                                             1/1 
+
+Installed:
+  php-mbstring.x86_64 0:5.3.3-27.el6_5                                                                                            
+
+Complete!
+[root@sil-server15 php.d]# ll /usr/lib64/php/modules/ | grep mbstring
+-rwxr-xr-x. 1 root root 2183496 12月 11 11:34 mbstring.so
+[root@sil-server15 php.d]# 
+二、解决思路
+题目之间的分割格式，数字后跟点号：'^[0-9][0-9]*\.'
+空格的作用：空格前期不做任何处理，后期处理如果需要会进行相应处理。
+字母开头的默认为选项
+数字开头的？
+1、非常规字符预处理pre_char_conv：1）将非常规字符转换为对应的常规字符2）对于行首为字母（数字）开头的（之前可以用空格）且字母（数字）后不跟.（对于数字其后不能跟右括号），视为用来进行分割的特殊字符，在后面加上符号.。
+2、字符串分割split_content，用来分割题目、选项、答案、解析等，在同一行的。
+字符串分割之一：以数字（前可以有空格）加.开头的，用split_question分割：1）判断是否需要分割need_split_question，如果符合题目、选项、答案、解析正则表达式的数目大于1，则需要分割，否则不需要。
+字符串分割之二：以数字（前可以有空格）加.开头的，用split_option分割：1）判断是否需要分割need_split_option，如果符合选项、（答案、解析？）正则表达式的数目大于1，则需要分割，否则不需要。
+3、字符串处理post_char_conv，为类型识别做准备，因为：如果只用数字或字母开头作为标准，可能会出错误，如2)因为选项而不是题目。post_char_conv的主要工作：1）去掉空格2）对于行首为字母（数字）开头的（之前可以用空格）且字母（数字）后不跟.（对于数字其后不能跟右括号），在后面加上符号.。主要针对的是后来分割出来的字符串。
+4、角色猜测get_supposed_role：根据对应的正则表达式，猜测该字符串的角色。
+5、角色修正check_role：1）相邻角色相同且不为option，二合一2）如果相邻角色顺序不对，如果类型是option，则与前一个合并。
+
+比较危险的地方：字符串分割。
+
+
+注意：
+1、数字开头，如果后面跟右括号，则认为是选项，否则预先会在其后面加上.默认为是题目。
+2、假设所有以题目开始，且都有答案。
+
+三、解决思路（新）
+3.1、答案的分割：答案中有多个字母。
+不需要分割：
+61、按生产要素密集程度,企业划分为(　　)
+A.劳动密集型
+B.资金密集型
+C.知识密集型
+D.合资经营
+E.合作经营企业
+答案：a,b,c
+62、多元化企业的特点是(　　)
+A.资源利用率提高
+B.增加管理难度
+C.共担风险，共负盈亏
+D.适应市场变化能力差
+E.独立核算
+答案：a,b
+解析：A为优点，B为缺点。
+　　1、市场经济与商品经济不同，它是(　)。
+　　A.相对于自然经济、产品经济而言的
+　　B.通过市场机制来引导和调节企业和居民的行为
+　　C.市场在资源配置中起基础作用的商品经济
+　　D.商品经济发展的必然要求
+　　E.发达的商品经济
+　　2、商品经济存在必须具备的两个条件是(　)。
+　　A.生产资料和产品分属于各个不同的所有者
+　　B.私有制的产生
+　　C.社会分工
+　　D.阶级的出现
+　　E.国家的产生
+　　1、
+　　【正确答案】：BCDE
+　　【答案解析】：本题考查市场经济与商品经济的不同点。
+　　2、
+　　【正确答案】：AC
+　　【答案解析】：本题考查商品经济产生和发展的经济条件。
+需要分割：
+1.马克思指出：会计是对生产过程的"控制和观念的总结"。这表明会计的基本职能是()      
+     1)生产职能     2)反映监督职能  
+   3)生产职能和管理职能的统一     4)主要是管理职能兼生产职能      
+2.传统的会计主要是()      
+   1)记帐算帐报帐     2)记帐预测分析     3)记帐算帐查帐     4)记帐报帐查帐
+答案：ad
+需要分割：
+40．在填制会计凭证时，1518.34的大写金额是（   ）。
+ A 壹仟伍佰拾捌元三角四分整     
+ B 壹仟伍佰壹拾捌元三角四分整
+ C 壹仟伍佰壹拾捌元三角四分
+ D 壹仟伍佰拾捌元三角四分
+53．按照记账凭证的审核要求，下列不属于记账凭证的审核内容的是（   ）。
+A 会计科目使用是否正确         B 凭证有关事项是否符合规划和预算
+C 于原始凭证金额是否一致       D 凭证项目是否齐全
+答案：
+BD
+需要分割：
+40．2010年在填制会计凭证时，1518.34的大写金额是（   ）。
+ A 壹仟伍佰拾捌元三角四当分整     
+ B 壹仟伍佰壹拾捌元三角四分整
+ C 壹仟伍佰壹拾捌元三角四分
+ D 壹仟伍佰拾捌元三角四分
+53．2008 年按照记账凭证的审核要求，下列不属于记账凭证的审核内容的是（   ）。
+A 会计科目使用是否正确         B 凭证有关事项是否符合规划和预算
+C 于原始凭证金额是否一致       D 凭证项目是否齐全
+54．按照记账凭证的审核要求，下列不属于记账凭证的审核内容的是（   ）。
+答案：
+1.BD 2.ab  3.x
+
+答案辅助识别（需要在前面补充'答案'二字，以便识别为答案）：
+1、$row = preg_replace('/^ *([0-9]+ *\.* *[A-F]+)$/','答案$1',$row);
+符合答案格式，但前面没有答案标示的，需要加上'答案'二字
+如
+答案:
+1.B
+解析：嘻嘻嘻
+2.ac
+解析：we呃呃呃
+2、$row = preg_replace('/ *([0-9]+-[0-9]+)/','答案汇总$1',$row);
+前面加'答案汇总'，会逐字母分割
+如
+1-5 CABAA
+5-10 ADBCB
+3、$row = preg_replace('/((?:[0-9]+ *\.* *(?:正确|错误|[A-Fx√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fx√×对错])+ *){1,})/','答案$1',$row);
+出现连个个以上(?:[0-9]+ *\.* *(?:[A-FT]+) *)的形式，就任务是以index分割的答案，按数字进行分割。
+如
+1B 2B 3D 4B 5A 6B 7C 8B 9D 10C
+总结：
+默认需要分割，
+满足样式：$p0 = '(?:12{4,5}){2,}(?:3+?4*){2,}'，不需要分割。
+答案满足样式，需要按数字分割。
+3.2、行的合并
+3.3、行的分割
+3.4、关于空格
+选项[A-F]的识别需要空格。
+答案提取需要将空格删除，以便正则表达式匹配。
+空格在merge_rows方法中被删除。
+在问题和选项的识别中不需要空格。可以保留。
+3.5、题目、选项、解析多行的问题
+拼接之后放在一个字符串中，在merge_rows中进行。
+$rows_follow_analysis = $rows_follow_analysis.'\n'.$next_row;
+在网页上预览显示时，通过explode方法，按'\n'分割，并将结果放入数组。
+explode('\n', $arr[$start_pos+$k])
+
+关于解析的拼接字符串，在array中出现空行的情况：在merge_rows并非空行，但在array_retreat_rows中被替换导致空行。
+
+3.6、题型的判断
+选择、填空。
+如果选项少于两个，有可能为选择或填空。
+对于题目答案分离的情况，出现选择或填空，按选项个数是否为0来判断。
+
+3.7、答案的分割
+在获得各行角色和答案的分割在同一个函数：get_and_check_roles。
+如果是答案题目分离且个数相同的情况，答案不需要进行分割，在get_and_check_roles中进行答案[A-FT]的合并，将[^A-FT]字符删除。
+其它情况都要试用find_split_answer进行分割。
+find_split_answer辅助get_and_check_roles进行答案的寻找（对于答案在题目中的情况）和分割
+待完善：填空题的答案部需要[A-FT]的查找与合并；如果填空题答案中出现[A-FT]会被认为是判断题。
+
+3.8、角色前缀的删除
+需要在为其赋予角色后即删除，否则在角色合并之后，会出现前缀删除不完全的情况。
