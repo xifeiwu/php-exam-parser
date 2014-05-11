@@ -6,8 +6,13 @@ mb_internal_encoding ( 'UTF-8' );
 $global_role2index['statement'] = 0;
 $global_index2role[0] = 'statement';
 $row_type_statement;
-$reg_statement4role = '^ *\[综合题.*?\].+';
-
+$reg_statement4role = '^ *\[综合题.*?\]';
+$reg_statement4replace = '^ *\[综合题.*?\]';
+function get_statement_length($row){
+    global $reg_statement4role;
+    $row = preg_replace('/'.$reg_statement4role.'/', '', $row);
+    return strlen($row);
+}
 //get the role of row [questin|option|anwser|analysis]
 function get_role_by_row_subjective($row){
     global $reg_statement4role;
@@ -41,10 +46,16 @@ function get_roles(&$arr){
     $statement_preserve = '';
     for($i=0; $i<count($arr); $i++){
         $row = $arr[$i];
-        $row = preg_replace('/^ *([0-9]+)\) *\./', '$1.', $row);
+        $row = preg_replace('/^ *([0-9]+)\) *(?:、|\.)/', '$1.', $row);
         $row_role = get_role_by_row_subjective($row);
         if($row_role == 'statement'){
-            $statement_preserve = $row;
+            echo 'length:'.get_statement_length($row).'<br>';
+            if(get_statement_length($row) == 0){
+                $statement_preserve = $row.get_row_by_index($arr, $i+1);
+                $i++;
+            }else{
+                $statement_preserve = $row;
+            }
             $next_row = preg_replace('/^ *([0-9]+)\) *\./', '$1.', $arr[$i+1]);
             $next_role = get_role_by_row_subjective($next_row);
             while('unknown' == $next_role){
