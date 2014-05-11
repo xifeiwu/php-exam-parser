@@ -48,7 +48,7 @@ function get_roles(&$arr){
             $next_row = preg_replace('/^ *([0-9]+)\) *\./', '$1.', $arr[$i+1]);
             $next_role = get_role_by_row_subjective($next_row);
             while('unknown' == $next_role){
-                $statement_preserve = $statement_preserve.$next_row;
+                $statement_preserve = $statement_preserve.'\n'.$next_row;
                 $i++;
                 $next_row = preg_replace('/^ *([0-9]+)\) *\./', '$1.', $arr[$i+1]);
                 $next_role = get_role_by_row_subjective($next_row);
@@ -104,7 +104,23 @@ function preview_subjective_exam($exam_array){
     //echo '<div class="view_result"><a href=\'parser-exam.php?type=array\'>查看Array格式</a></div>';
     echo '</div>';
     for($i=0; $i<count($exam_array); $i++){
-        echo '<div class="statement">'.$exam_array[$i]['statement'].'</div>';
+        //echo '<div class="statement">'.$exam_array[$i]['statement'].'</div>';
+        $array_tmp = explode('\n', $exam_array[$i]['statement']);
+        $length_tmp = count($array_tmp);
+        if($length_tmp > 1){
+            echo '<div class=statement>';
+            for($j=0; $j<$length_tmp; $j++){
+                echo ''.$array_tmp[$j].'<br>';
+            }
+            echo '</div>';
+        }else
+        if($length_tmp == 1 && (mb_strlen($array_tmp[0]) != 0))
+        {
+            echo '<div class=analysis>';
+            echo $array_tmp[0].'<br>';
+            echo '</div>';
+        }
+        
         $questions = $exam_array[$i]['questions'];
         for($j=0; $j<count($questions); $j++){
             output_a_exam($questions[$j], $j);
