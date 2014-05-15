@@ -6,8 +6,8 @@ mb_internal_encoding ( 'UTF-8' );
 $global_role2index['statement'] = 0;
 $global_index2role[0] = 'statement';
 $row_type_statement;
-$reg_statement4role = '^ *\[综合题.*?\]';
-$reg_statement4replace = '^ *\[综合题.*?\]';
+$reg_statement4role = '^ *([0-9]+ *\. *\[综合题.*?\]| *\[综合题.*?\])';
+$reg_statement4replace = '^ *([0-9]+ *\. *\[综合题.*?\]| *\[综合题.*?\])';
 function get_statement_length($row){
     global $reg_statement4role;
     $row = preg_replace('/'.$reg_statement4role.'/', '', $row);
@@ -21,6 +21,11 @@ function get_role_by_row_subjective($row){
     global $reg_answer4role;
     global $reg_analysis4role;
     $role = 'unknown';
+    //$reg_statement4role should be placed before $reg_question4role, as 1.[综合题]
+    if (preg_match('/'.$reg_statement4role.'/', $row)){
+        $role = 'statement';
+    }
+    else
     if(preg_match('/'.$reg_analysis4role.'/', $row)){
         $role = 'analysis';
     }else
@@ -31,9 +36,6 @@ function get_role_by_row_subjective($row){
         $role = 'option';
     }elseif(preg_match('/'.$reg_question4role.'/', $row)){
         $role = 'question';
-    }
-    elseif (preg_match('/'.$reg_statement4role.'/', $row)){
-        $role = 'statement';
     }
     return $role;
 }

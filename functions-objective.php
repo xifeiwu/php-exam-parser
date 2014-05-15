@@ -47,6 +47,23 @@ $reg_answer4replace = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答�
 $reg_analysis4replace = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*:*';
 
 
+$type_multi_choice = 0;
+$type_single_choice = 1;
+$type_true_or_false_question = 2;
+$type_fill_in_the_blank = 3;
+$answer_in_question_multi_choice = 0;
+$answer_in_question_single_choice = 1;
+$separate_answer_from_question = 2;
+$multi_choice = 3;
+$single_choice = 4;
+$option_less_than_two = 5;
+$true_or_false_question = 6;
+$fill_in_the_blank = 7;
+$type_array = array(
+'answer_in_question_multi_choice', 'answer_in_question_single_choice',
+'separate_answer_analysis_from_question', 'separate_answer_from_question',
+'multi_choice', 'single_choice', 'true_or_false_question', 'fill_in_the_blank',
+);
 //get the role of row [questin|option|anwser|analysis]
 function get_role_by_row($row){
     global $reg_question4role;
@@ -112,8 +129,9 @@ function pre_char_conv($arr){
 	    }
         }
 */
-        //begin with number, no dot followed, and not ) followed.
-        
+        //replace 、after question symbol to .
+        $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *、/', '${1}.', $row);
+        //begin with number, no dot followed, and not ) followed.        
         if(preg_match('/^ *[0-9]+.+/', $row)){
             if(!preg_match('/^ *[0-9]+ *?[\.\)-]/', $row)){            
                 $row = preg_replace('/^( *[0-9]+)/', '${1}.', $row); 
@@ -131,8 +149,6 @@ function pre_treat_rows($arr){
     $arr_new = array();
     for($i=0; $i < count($arr); $i++){
         $row = $arr[$i];
-        ;
-        $row = preg_replace('/^ *([0-9]+|第[0-9]+题|< *[0-9]+ *>) *、/', '${1}.', $row);
         //for Non-Breaking Space in HTML 
         $row = preg_replace('/\xC2\xA0/',' ',$row);
         // A B C D
@@ -1250,20 +1266,26 @@ function array_retreat_rows(&$arr){
     $search = array('A', 'B', 'C', 'D', 'E', 'F', 'a', 'b', 'c', 'd', 'e', 'f', '√', '×');
     $replace = array('1', '2', '3', '4', '5', '6', '1', '2', '3', '4', '5', '6', 'T', 'F');
     
-    global $answer_in_question_multi_choice;
-    global $answer_in_question_single_choice;
-    global $multi_choice;
-    global $single_choice;
-    global $option_less_than_two_question;
-    global $true_or_false_question;
-    global $fill_in_the_blank;
-    global $separate_answer_analysis_from_question;
-    global $separate_answer_from_question;
-    global $type_array;    
+    //global $answer_in_question_multi_choice;
+    //global $answer_in_question_single_choice;
+    //global $multi_choice;
+    //global $single_choice;
+    global $option_less_than_two;
+    //global $true_or_false_question;
+    //global $fill_in_the_blank;
+    //global $separate_answer_analysis_from_question;
+    //global $separate_answer_from_question;
+    //global $type_array;    
+
+    global $type_multi_choice;
+    global $type_single_choice;
+    global $type_true_or_false_question;
+    global $type_fill_in_the_blank;
+    
     $type = $arr['type'];
     if(array_key_exists('option', $arr)){
         if(count($arr['option'])<2){
-            $type = $option_less_than_two_question;
+            $type = $option_less_than_two;
         }
     }
     //echo '<br>type'.$type.':';print_r($arr);
@@ -1285,9 +1307,10 @@ function array_retreat_rows(&$arr){
         }
     }
     if(array_key_exists('answer', $arr)){
-        if($type != $option_less_than_two_question){
+        if($type != $option_less_than_two){
             $arr['answer'] = str_replace($search, $replace, $arr['answer']);            
         }else{
+            $arr['answer'] = strtoupper($arr['answer']);
             if(array_key_exists('option', $arr)){
                 for($i=0; $i<count($arr['option']); $i++){
                     if(preg_match('/'.$arr['answer'].'/', $arr['option'][$i])){
@@ -1304,7 +1327,7 @@ function array_retreat_rows(&$arr){
         }
     }
 	if(array_key_exists('option', $arr)){
-		if ($type != $option_less_than_two_question) {
+		if ($type != $option_less_than_two) {
 			$opt_array_tmp = $arr['option'];
 			asort($opt_array_tmp);
 			// print_r($opt_array_tmp);
@@ -1348,15 +1371,15 @@ function array_retreat_rows(&$arr){
     //guess array types
     if(count($arr['option']) == 0){
         if(preg_match_all('/[FT]/', $arr['answer'], $matches)){            
-            $arr['type'] = $true_or_false_question;
+            $arr['type'] = $type_true_or_false_question;
         }else{          
-            $arr['type'] = $fill_in_the_blank;                
+            $arr['type'] = $type_fill_in_the_blank;                
         }
     }else{
         if(mb_strlen($arr['answer']) == 1){
-            $arr['type'] = $single_choice;
+            $arr['type'] = $type_single_choice;
         }else{
-            $arr['type'] = $multi_choice;
+            $arr['type'] = $type_multi_choice;
         }
     }
     //echo '<br>';
@@ -1365,19 +1388,7 @@ function array_retreat_rows(&$arr){
     //echo 'count:'.count($arr['option']).'<br>';
     return $arr;
 }
-$answer_in_question_multi_choice = 0;
-$answer_in_question_single_choice = 1;
-$separate_answer_from_question = 2;
-$multi_choice = 3;
-$single_choice = 4;
-$option_less_than_two_question = 5;
-$true_or_false_question = 6;
-$fill_in_the_blank = 7;
-$type_array = array(
-'answer_in_question_multi_choice', 'answer_in_question_single_choice',
-'separate_answer_analysis_from_question', 'separate_answer_from_question',
-'multi_choice', 'single_choice', 'true_or_false_question', 'fill_in_the_blank',
-);
+
 function rows_to_array($arr, $arr_role){
 //echo '<br>';
 //print_r($arr);
@@ -1389,7 +1400,7 @@ function rows_to_array($arr, $arr_role){
     global $separate_answer_from_question;
     global $multi_choice;
     global $single_choice;
-    global $option_less_than_two_question;
+    global $option_less_than_two;
     global $true_or_false_question;
     global $fill_in_the_blank;
     //global $separate_answer_analysis_from_question;
@@ -1499,8 +1510,9 @@ function rows_to_array($arr, $arr_role){
             case $answer_in_question_single_choice:
             case $multi_choice:
             case $single_choice:
-            case $option_less_than_two_question:
+            case $option_less_than_two:
                 $exam_cur = array();
+                //useful, can not comment
                 $exam_cur['type'] = $reg_type;
                 $exam_cur['option'] = array();
                 $exam_cur['answer'] = '';
@@ -1638,25 +1650,25 @@ function preview_objective_exam_stage1($exam_array){
     echo '</div>';
 }
 function output_a_exam($cur_exam, $index){
-	global $multi_choice;
-	global $single_choice;
-	global $true_or_false_question;
-	global $fill_in_the_blank;
+	global $type_multi_choice;
+	global $type_single_choice;
+	global $type_true_or_false_question;
+	global $type_fill_in_the_blank;
 	$array_tmp = array();
 	$exam_type = '未知';
 	$option_prefix = array('A', 'B', 'C', 'D', 'E', 'F');
     switch($cur_exam['type'])
     {
-	    case $single_choice:
+	    case $type_single_choice:
 	    	$exam_type = '单选';
 	    	break;
-	    case $multi_choice:
+	    case $type_multi_choice:
 	    	$exam_type = '多选';
 	    	break;
-	    case $true_or_false_question:
+	    case $type_true_or_false_question:
 	    	$exam_type = '判断';
 	    	break;
-	    case $fill_in_the_blank:
+	    case $type_fill_in_the_blank:
 	    	$exam_type = '填空';
 	    	break;
     }
@@ -1697,12 +1709,12 @@ function output_a_exam($cur_exam, $index){
     if(array_key_exists('answer', $cur_exam)){
         $length_tmp = mb_strlen($cur_exam['answer']);
         echo '<div class=answer>'.'答案：';
-        if($true_or_false_question == $cur_exam['type']){
+        if($type_true_or_false_question == $cur_exam['type']){
             //for($j=0; $j<$length_tmp; $j++){
                 echo $cur_exam['answer'];//[$j];
             //}                
         }else
-        if($fill_in_the_blank == $cur_exam['type']){
+        if($type_fill_in_the_blank == $cur_exam['type']){
                 echo $cur_exam['answer'];
         }
         else{
@@ -1750,10 +1762,10 @@ function output_objective_exam_array($arr)
 }
 
 function preview_objective_exam_stage2($exam_array){
-    global $multi_choice;
-    global $single_choice;
-    global $true_or_false_question;
-    global $fill_in_the_blank;
+    global $type_multi_choice;
+    global $type_single_choice;
+    global $type_true_or_false_question;
+    global $type_fill_in_the_blank;
 
     $single_choice_array = array();
     $multi_choice_array = array();
@@ -1766,16 +1778,16 @@ function preview_objective_exam_stage2($exam_array){
         $cur_exam = $exam_array[$i];
         switch($cur_exam['type'])
         {
-        	case $single_choice:
+        	case $type_single_choice:
         	    array_push($single_choice_array, $cur_exam);
         	    break;
-        	case $multi_choice:
+        	case $type_multi_choice:
         	    array_push($multi_choice_array, $cur_exam);
         	    break;
-        	case $true_or_false_question:
+        	case $type_true_or_false_question:
         	    array_push($true_or_false_question_array, $cur_exam);
         	    break;
-        	case $fill_in_the_blank:
+        	case $type_fill_in_the_blank:
         	    array_push($fill_in_blank_array, $cur_exam);
         	    break;
         	default:
