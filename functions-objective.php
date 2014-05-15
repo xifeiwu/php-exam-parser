@@ -46,11 +46,10 @@ $reg_option4replace = '^ *[A-Fa-f][\.:]*|^ *[0-9]\)';
 $reg_answer4replace = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*:*';
 $reg_analysis4replace = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*:*';
 
-
-$type_multi_choice = 0;
-$type_single_choice = 1;
-$type_true_or_false_question = 2;
-$type_fill_in_the_blank = 3;
+$type_fill_in_the_blank = 0;
+$type_multi_choice = 1;
+$type_single_choice = 2;
+$type_true_or_false_question = 3;
 $answer_in_question_multi_choice = 0;
 $answer_in_question_single_choice = 1;
 $separate_answer_from_question = 2;

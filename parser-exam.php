@@ -56,11 +56,11 @@ if(isset($_POST['view_test_output'])){
         	    //return;
         	    
         	    $content_array = pre_treat_rows($content_array);
-        	    //preview4test($content_array, null);
+        	    preview4test($content_array, null);
         	    //return;
         	    
         	    $pre_role_array = get_roles($content_array);
-        	    preview4test($content_array, null);
+        	    preview4test($content_array, $pre_role_array );
         	    //return;
         	    
         	    $exam_array = split_rows_by_statement($content_array, $pre_role_array);

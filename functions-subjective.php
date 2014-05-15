@@ -51,7 +51,7 @@ function get_roles(&$arr){
         $row = preg_replace('/^ *([0-9]+)\) *(?:、|\.)/', '$1.', $row);
         $row_role = get_role_by_row_subjective($row);
         if($row_role == 'statement'){
-            echo 'length:'.get_statement_length($row).'<br>';
+            //echo 'length:'.get_statement_length($row).'<br>';
             if(get_statement_length($row) == 0){
                 $statement_preserve = $row.get_row_by_index($arr, $i+1);
                 $i++;
@@ -84,7 +84,7 @@ function split_rows_by_statement($arr, $arr_role){
     for($i=0; $i<count($arr_role); $i++){
         $role_line = $role_line.$global_role2index[$arr_role[$i]];
     }
-    //echo 'role line'.$role_line.'<br>';
+    echo 'role line'.$role_line.'<br>';
     $exam_array = array();
     if(preg_match_all('/0[1-5]+[^0]/', $role_line, $reg, PREG_OFFSET_CAPTURE)){
         for($j=0; $j<count($reg[0]); $j++){
@@ -106,6 +106,7 @@ function split_rows_by_statement($arr, $arr_role){
         	//return;
             $exam_cur['questions'] = rows_to_array($questions, $pre_role_array);
             array_push($exam_array, $exam_cur);
+            //print_r($exam_cur);
         }
     }
     return $exam_array;
@@ -119,6 +120,7 @@ function preview_subjective_exam($exam_array){
     for($i=0; $i<count($exam_array); $i++){
         //echo '<div class="statement">'.$exam_array[$i]['statement'].'</div>';
         $array_tmp = explode('\n', $exam_array[$i]['statement']);
+        //print_r($array_tmp);
         $length_tmp = count($array_tmp);
         if($length_tmp > 1){
             echo '<div class=statement>';
@@ -129,7 +131,7 @@ function preview_subjective_exam($exam_array){
         }else
         if($length_tmp == 1 && (mb_strlen($array_tmp[0]) != 0))
         {
-            echo '<div class=analysis>';
+            echo '<div class=statement>';
             echo $array_tmp[0].'<br>';
             echo '</div>';
         }
