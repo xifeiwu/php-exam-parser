@@ -8,6 +8,11 @@ $global_index2role[0] = 'statement';
 $row_type_statement;
 $reg_statement4role = '^ *([0-9]+ *\. *\[综合题.*?\]| *\[综合题.*?\])';
 $reg_statement4replace = '^ *([0-9]+ *\. *\[综合题.*?\]| *\[综合题.*?\])';
+
+$type_fill_in_the_blank_subjective = 1;
+$type_choice_question_subjective = 2;
+$type_unknown_subjective = -1;
+
 function get_statement_length($row){
     global $reg_statement4role;
     $row = preg_replace('/'.$reg_statement4role.'/', '', $row);
@@ -88,9 +93,6 @@ function get_roles(&$arr){
     $arr = $arr_new;
     return $arr_role;
 }
-$type_fill_in_the_blank_subjective = 1;
-$type_choice_question_subjective = 2;
-$type_unknown_subjective = -1;
 function array_post_treat_subjective($arr){
     global $type_multi_choice;
     global $type_single_choice;
@@ -132,7 +134,7 @@ function array_post_treat_subjective($arr){
             $exam_type = $type_unknown_subjective;
             continue;    
         }
-        echo '$exam_type:'.$exam_type.'<br>';
+        //echo '$exam_type:'.$exam_type.'<br>';
     }
     $arr['type'] = $exam_type; 
     return $arr;

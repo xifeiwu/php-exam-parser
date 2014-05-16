@@ -27,11 +27,13 @@ function do_index_body() {
 			</div>
 
 			<textarea id='content' name="content" rows=25></textarea>
-			<div class=footer>
-				<div class=footer_button>
-					<!--input type="submit" name="get_results_array" value="查看结果<Array格式>"-->
-					<input class="preview" type="submit" name="preview_results" value="查看结果<HTML格式>"></input> 
-					<input class="test_view" type="submit" name="view_test_output" value="预览<测试用>"></input>
+			<div class=footer_button>
+				<!--input type="submit" name="get_results_array" value="查看结果<Array格式>"-->
+				<div class=button_box> 
+				<input class="preview" type="submit" name="preview_results" value="查看结果<HTML格式>"></input>
+				</div>
+				<div class=button_box> 
+				<input class="test_view" type="submit" name="view_test_output" value="预览<测试用>"></input>
 				</div>
 			</div>
 		</form>
