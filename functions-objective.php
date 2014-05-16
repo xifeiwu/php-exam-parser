@@ -1257,7 +1257,7 @@ function get_and_check_roles(&$arr){
 //$global_role2index['analysis'] = 4;
 //$global_role2index['unknown'] = 5;
 //$reg_question4role = '^ *[0-9]+.*?\..+|^ *第[0-9]+题';
-function array_retreat_rows(&$arr){
+function array_post_treat($arr){
     global $reg_question4replace;
     global $reg_option4replace;
     global $reg_answer4replace;
@@ -1534,7 +1534,7 @@ function rows_to_array($arr, $arr_role){
                         $exam_cur[$role_tmp] = $arr[$start_pos+$k];
                     }
                 }
-                array_push($exam_array, array_retreat_rows($exam_cur));
+                array_push($exam_array, array_post_treat($exam_cur));
             break;
             case $separate_answer_from_question:
                 //echo '$role_line_tmp'.$role_line_tmp.'<br>';
@@ -1598,7 +1598,7 @@ function rows_to_array($arr, $arr_role){
                         }
                     }
         	    
-                    array_push($exam_array, array_retreat_rows($exam_cur));
+                    array_push($exam_array, array_post_treat($exam_cur));
                 }
                 //echo '<br>split type 4<br>';
                 //print_r($reg_q_o[0]);
@@ -1648,14 +1648,17 @@ function preview_objective_exam_stage1($exam_array){
     echo '</div>';
     echo '</div>';
 }
+//$type_name_array = array('单选', '多选', '判断', '填空');
 function output_a_exam($cur_exam, $index){
 	global $type_multi_choice;
 	global $type_single_choice;
 	global $type_true_or_false_question;
 	global $type_fill_in_the_blank;
+	global $type_name_array;
 	$array_tmp = array();
 	$exam_type = '未知';
 	$option_prefix = array('A', 'B', 'C', 'D', 'E', 'F');
+	
     switch($cur_exam['type'])
     {
 	    case $type_single_choice:
@@ -1671,6 +1674,7 @@ function output_a_exam($cur_exam, $index){
 	    	$exam_type = '填空';
 	    	break;
     }
+    
     if(array_key_exists('question', $cur_exam)){
         $array_tmp = explode('\n', $cur_exam['question']);
         $length_tmp = count($array_tmp);
