@@ -102,7 +102,10 @@ function array_post_treat_subjective($arr){
     global $type_fill_in_the_blank_subjective;
     global $type_choice_question_subjective;
     global $type_unknown_subjective;
-    
+
+    global $reg_statement4replace;
+    $arr['statement'] = preg_replace('/'.$reg_statement4replace.'/', '', $arr['statement']);
+
     $exam_type = $type_unknown_subjective;
     //echo '$exam_type1'.$exam_type.'<br>';
     for($i=0; $i<count($arr['questions']); $i++){
