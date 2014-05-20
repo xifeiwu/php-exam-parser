@@ -223,14 +223,20 @@ function preview_subjective_exam($exam_array){
             output_a_exam($questions[$j], $j);
         }
     }
-    echo '<div class=footer>';
+//     echo '<div class=footer>';
+//     echo '<div class=footer_button>';
+//     echo '<input class="ok" type="button" name="insert_to_database" value="没有问题，加入数据库" onclick="location.href =\'insert_to_database.php\'"></input>';
+//     echo '<input class="back" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
+//     echo '</div>';
+//     echo '</div>';
+//     echo '</div>';
+
     echo '<div class=footer_button>';
-    //echo '<span class=ok>';
-    echo '<input class="ok" type="button" name="insert_to_database" value="没有问题，加入数据库" onclick="location.href =\'insert_to_database.php\'"></input>';
-    //echo '</span><span class=back>';
-    echo '<input class="back" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
-    //echo '</span>';
+    echo '<div class=button_box>';
+    echo '<input class="button" type="button" name="insert_to_database" value="没有问题，加入数据库" onclick="location.href =\'insert_to_database.php\'"></input>';
     echo '</div>';
+    echo '<div class=button_box>';
+    echo '<input class="button" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
     echo '</div>';
     echo '</div>';
 }
@@ -255,9 +261,6 @@ function output_subjective_exam_array($exam_array)
         echo '<br>';
     }
     echo '</div>';
-    
-
-
 }
 
 ?>

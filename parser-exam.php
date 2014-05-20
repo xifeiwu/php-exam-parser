@@ -13,8 +13,8 @@ if(isset($_POST['view_test_output'])){
     //convert unrecongnized char into ordinary char.
     global $global_is_test_mode;
     $global_is_test_mode = true;
-    
-    $content_ori=$_POST['content'];
+    $_SESSION['content'] = $_POST['content'];
+    $content_ori = $_SESSION['content'];//$_POST['content'];
     
     if(isset($_POST['exam-type'])){
         //echo 'exam type:'.$_POST['exam-type'].'<br>';
@@ -81,11 +81,13 @@ if(isset($_POST['view_test_output'])){
 }
 if(isset($_POST['preview_results'])){
     if(isset($_POST['exam-type'])){
+        $_SESSION['content'] = $_POST['content'];
+        $content_ori = $_SESSION['content'];//$_POST['content'];
         switch($_POST['exam-type']){
         	case 'objective-exam':
                 //global $global_is_test_mode;
                 //$global_is_test_mode = true;
-                $content_ori=$_POST['content'];
+                //$content_ori=$_POST['content'];
                 $content_array = pre_char_conv(explode("\n", $content_ori));
                 $content_array = pre_treat_rows($content_array);
                 $content_array = split_rows($content_array);
@@ -98,7 +100,7 @@ if(isset($_POST['preview_results'])){
                 $_SESSION['exam_array'] = $exam_array;
                 break;
             case 'subjective-exam':
-                $content_ori=$_POST['content'];
+                //$content_ori=$_POST['content'];
         	    $content_array = pre_char_conv(explode("\n", $content_ori));        	    
         	    $content_array = pre_treat_rows($content_array);        	    
         	    $pre_role_array = get_roles($content_array);        	    

@@ -26,7 +26,8 @@ function do_index_body() {
     			</select><span class=noitce>&nbsp[注意：输入的内容要与题型对应]</span>
 			</div>
 
-			<textarea id='content' name="content" rows=25></textarea>
+			<textarea id='content' name="content" rows=25><?php 
+			if(isset($_SESSION['content'])){print_r($_SESSION['content']);}?></textarea>
 			<div class=footer_button>
 				<!--input type="submit" name="get_results_array" value="查看结果<Array格式>"-->
 				<div class=button_box> 

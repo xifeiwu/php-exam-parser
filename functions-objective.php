@@ -128,8 +128,9 @@ function pre_char_conv($arr){
 	    }
         }
 */
-        //replace 、after question symbol to .
+        //replace [、，]after question symbol to .
         $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *、/', '${1}.', $row);
+        $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *，/', '${1}.', $row);
         //begin with number, no dot followed, and not ) followed.        
         if(preg_match('/^ *[0-9]+.+/', $row)){
             if(!preg_match('/^ *[0-9]+ *?[\.\)-]/', $row)){            
@@ -1088,7 +1089,8 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                 }
                 continue;
             } 
-            else 
+            else
+            //答案：1.BD2.ab3.x
             if (preg_match ( '/(?:[0-9]+ *\.* *(?:[A-Fa-fT]+) *){2,}/', $row_tmp, $matches )){
                 // echo 'in function find and split answer.<br>';
                 $max_cnt = 12;
@@ -1122,8 +1124,8 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                 }
             }else {
                 if (mb_preg_match_all ( '/[A-Fa-fT]/', $row_tmp, $matches )) {
-                    // echo '<br>row_tmp:'.$row_tmp;
-                    // echo '<br>matches:';print_r($matches);
+                    //echo '<br>row_tmp:'.$row_tmp;
+                    //echo '<br>matches:';print_r($matches);
                     for($k = 0; $k < count ( $matches ); $k ++) {
                         array_push ( $content_pre, mb_substr ( $row_tmp, $matches [$k], 1 ) );
                         // array_push($content_pre, $row_tmp[$matches[$k]]);
@@ -1186,7 +1188,7 @@ function get_and_check_roles(&$arr){
         for($j=0; $j<count($reg[0]); $j++){
             $role_line_tmp = $reg[0][$j][0];
             $start_pos = $reg[0][$j][1];
-            //如果前一个被识别的字符串开始位置和长度之和不等于下一个字符串开始位置，说明中间有未被识别的字符串，试用默认方式分割
+            //如果前一个被识别的字符串开始位置和长度之和不等于下一个字符串开始位置，说明中间有未被识别的字符串，使用默认方式分割
             if(($prev_start_pos + $prev_line_length) != $start_pos ){
                 find_split_answer($arr, $prev_start_pos + $prev_line_length, $start_pos, $content_pre, $role_pre);
             }
@@ -1199,8 +1201,9 @@ function get_and_check_roles(&$arr){
             if(preg_match_all('/12{4,5}/', $role_line_tmp, $reg_q_o, PREG_OFFSET_CAPTURE)
             && preg_match_all('/3+?4*/', $role_line_tmp, $reg_a_a, PREG_OFFSET_CAPTURE)){
                 if(count($reg_q_o[0]) == count($reg_a_a[0])){
-                    echo_notice('count of question and option is different from answer and analysis.', 'get_and_check_roles');
                     $cnt_same = true;
+                }else{
+                    echo_notice('count of question and option is different from answer and analysis.', 'get_and_check_roles');                    
                 }
             }
             if($cnt_same){
@@ -1310,14 +1313,16 @@ function array_post_treat($arr){
             $arr['answer'] = str_replace($search, $replace, $arr['answer']);            
         }else{
             $arr['answer'] = strtoupper($arr['answer']);
-            if(array_key_exists('option', $arr)){
+            //echo 'answer:'.$arr['answer'].'<br>';
+            if(array_key_exists('option', $arr)){                
                 for($i=0; $i<count($arr['option']); $i++){
-                    if(preg_match('/'.$arr['answer'].'/', $arr['option'][$i])){
-                        if(preg_match('/'.'正确'.'/', $arr['option'][$i])){
+                    $option_tmp = strtoupper($arr['option'][$i]);
+                    if(preg_match('/'.$arr['answer'].'/', $option_tmp)){
+                        if(preg_match('/'.'正确'.'/', $option_tmp)){
                             $arr['answer'] = 'T';
                         }
                         else
-                        if(preg_match('/'.'错误'.'/', $arr['option'][$i])){
+                        if(preg_match('/'.'错误'.'/', $option_tmp)){
                             $arr['answer'] = 'F';
                         }                    
                     }
@@ -1381,11 +1386,11 @@ function array_post_treat($arr){
             $arr['type'] = $type_multi_choice;
         }
     }
-    //echo '<br>';
-    //echo '$arr<br>';
-    //print_r($arr);
-    //echo 'count:'.count($arr['option']).'<br>';
-    return $arr;
+//     echo '<br>';
+//     echo '$arr<br>';
+//     print_r($arr);
+//     echo 'count:'.count($arr['option']).'<br>';
+     return $arr;
 }
 
 function rows_to_array($arr, $arr_role){
@@ -1541,11 +1546,17 @@ function rows_to_array($arr, $arr_role){
                 if(preg_match_all('/12{0,5}/', $role_line_tmp, $reg_q_o, PREG_OFFSET_CAPTURE) 
                 && preg_match_all('/3+?4*/', $role_line_tmp, $reg_a_a, PREG_OFFSET_CAPTURE)){
 
-                    //echo '<br>split type 4<br>';
-                    //print_r($reg_q_o[0]);
-                    //echo '<br>';
-                    //print_r($reg_a_a[0]);
-                    //echo '<br>';
+//                     echo '<br>split type 4<br>';
+//                     print_r($reg_q_o[0]);
+//                     echo '<br>';
+//                     print_r($reg_a_a[0]);
+//                     echo '<br>';
+//                     echo '<br>';
+//                     echo 'count of $reg_q_o:'.count($reg_q_o[0]);
+//                     echo '<br>';
+//                     echo 'count of $$reg_a_a:'.count($reg_a_a[0]);
+//                     echo '<br>';
+                    
                     if(count($reg_q_o[0]) != count($reg_a_a[0])){
                         echo_error('count of question and option is different from answer and analysis.', 'split_rows2array');
                         continue;
