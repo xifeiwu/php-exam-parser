@@ -6,7 +6,6 @@ function do_html_header($title) {
 <head>
 <title><?php echo $title;?></title>
 <link rel="stylesheet" type="text/css" href="exam-parser.css">
-<script type="text/javascript" src="exam-parser.js"></script>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
 </head>
 <body>
@@ -14,6 +13,7 @@ function do_html_header($title) {
 }
 function do_index_body() {
     ?>
+<script type="text/javascript" src="exam-parser.js"></script>
 <div class="index">
     <div class=index-form>
 		<form method="post" action="parser-exam.php">

@@ -1,4 +1,5 @@
 <?php 
+require_once('output_html.php');
 mb_internal_encoding('UTF-8');
 //like preg_match_all, but can be used for chinese character.
 function mb_preg_match_all($pattern, $subject, &$matches){

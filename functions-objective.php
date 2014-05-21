@@ -129,8 +129,8 @@ function pre_char_conv($arr){
         }
 */
         //replace [、，]after question symbol to .
-        $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *、/', '${1}.', $row);
-        $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *，/', '${1}.', $row);
+        $row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *(?:、|，)/', '${1}.', $row);
+        //$row = preg_replace('/([0-9]+|第[0-9]+题|< *[0-9]+ *>) *，/', '${1}.', $row);
         //begin with number, no dot followed, and not ) followed.        
         if(preg_match('/^ *[0-9]+.+/', $row)){
             if(!preg_match('/^ *[0-9]+ *?[\.\)-]/', $row)){            
@@ -1022,7 +1022,7 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
     $search = array ();
     $replace = array ();
     array_push ( $search, '\( *([A-Fa-fT]+) *\)' ); // √×
-    array_push ( $replace, '()' );
+    array_push ( $replace, '( )' );
     array_push ( $search, '([A-Fa-fT]+)$' ); // √×
     array_push ( $replace, '' );
     for($i = $start; $i < $end; $i ++) {
@@ -1036,8 +1036,11 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
         // echo $row_tmp.$role_tmp.'<br>';
         switch ($role_tmp) {
         case 'question' :
-            $row_tmp = preg_replace ( '/(√|正确|对)/', 'T', $row_tmp );
-            $row_tmp = preg_replace ( '/(×|错误|错)/', 'F', $row_tmp );
+            // replace answer in bracket to T or F
+            $row_tmp = preg_replace ( '/\( *(?:√|正确|对) *\)/', 'T', $row_tmp );
+            $row_tmp = preg_replace ( '/\( *(?:×|错误|错) *\)/', 'F', $row_tmp );
+            $row_tmp = preg_replace ( '/(?:√|正确|对) *$/', 'T', $row_tmp );
+            $row_tmp = preg_replace ( '/(?:×|错误|错) *$/', 'F', $row_tmp );
             $find_answer = false;
             for($j = 0; $j < count ( $search ); $j ++) {
                 // echo '√'.ord('√').'<br>';
@@ -1047,8 +1050,10 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                         echo_error ( 'There are more than one answer in question.', 'get_and_check_roles' );
                         continue;
                     }
+                    //deal with question
                     array_push ( $content_pre, preg_replace ( '/' . $search [$j] . '/', $replace [$j], $row_tmp ) );
                     array_push ( $role_pre, $role_tmp );
+                    //deal with answer
                     $answers_tmp = $reg [1] [0]; // '答案'.$reg[count($reg) - 1];
                     for($k = 0; $k < mb_strlen ( $answers_tmp ); $k ++) {
                         array_push ( $content_pre, $answers_tmp [$k] );
@@ -1061,7 +1066,7 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
                 }
             }
             if (! $find_answer) {
-                array_push ( $content_pre, $arr [$i] );
+                array_push ( $content_pre, $row_tmp );
                 array_push ( $role_pre, $role_tmp );
             }
             break;
@@ -1074,8 +1079,8 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
             if (preg_match ( '/^答案汇总/', $row_tmp, $matches )) {
                 // if(preg_match('/[0-9]+-[0-9]+[A-Fa-f]+/', $row_tmp)){
                 if (mb_preg_match_all ( '/[A-Fa-fT]/', $row_tmp, $matches )) { // √×
-                                                                            // echo '<br>row_tmp:'.$row_tmp;
-                                                                            // echo '<br>matches:';print_r($matches);
+                    // echo '<br>row_tmp:'.$row_tmp;
+                    // echo '<br>matches:';print_r($matches);
                     for($k = 0; $k < count ( $matches ); $k ++) {
                         array_push ( $content_pre, mb_substr ( $row_tmp, $matches [$k], 1 ) );
                         // array_push($content_pre, $row_tmp[$matches[$k]]);
@@ -1328,6 +1333,8 @@ function array_post_treat($arr){
                     }
                 }
             }
+            $arr['answer'] = str_replace(array('A', 'a'), array('T', 'T'), $arr['answer']);
+            $arr['answer'] = str_replace(array('B', 'b'), array('F', 'F'), $arr['answer']);
         }
     }
 	if(array_key_exists('option', $arr)){
@@ -1339,7 +1346,11 @@ function array_post_treat($arr){
 			$i = 0;
 			foreach($opt_array_tmp as $key => $value){
 				// echo $key.'->'.$value.'<br>';
-				$arr['option'][$i++] = preg_replace( '/' . $reg_option4replace . '/', '', $value );
+				//remove option symbol
+				$value = preg_replace( '/' . $reg_option4replace . '/', '', $value );
+				//remove [、，] after option symbol
+                $value = preg_replace('/^(、|，)/', '', $value);
+				$arr['option'][$i++] = $value;
 			}
 		}
 		else {
@@ -1625,40 +1636,8 @@ function rows_to_array($arr, $arr_role){
     //}
     return $exam_array;
 }
-//$global_role2index['question'] = 1;
-//$global_role2index['option'] = 2;
-//$global_role2index['answer'] = 3;
-//$global_role2index['analysis'] = 4;
-//$global_role2index['unknown'] = 5;
-//$answer_in_question_multi_choice = 0;
-//$answer_in_question_single_choice = 1;
-//$separate_answer_analysis_from_question = 2;
-//$separate_answer_from_question = 3;
-//$multi_choice = 4;
-//$single_choice = 5;
-//$true_or_false_question = 6;
-function preview_objective_exam_stage1($exam_array){
-    echo '<div class="demo-box">';
-    echo '<div class="header">';
-    echo '<h2>试题浏览</h2>';//preview_results
-    echo '<div class="view_result"><a href=\'parser-exam.php?type=array\'>查看Array格式</a></div>';
-    echo '</div>';
-    //echo '$length of exam-array'.count($exam_array).'<br>';
-    for($i=0; $i < count($exam_array); $i++){
-        $cur_exam = $exam_array[$i];
-        output_a_exam($cur_exam, $i);
-    }
-    echo '<div class=footer>';
-    echo '<div class=footer_button>';
-    //echo '<span class=ok>';
-    echo '<input class="ok" type="button" name="insert_to_database" value="没有问题，加入数据库" onclick="location.href =\'insert_to_database.php\'"></input>';
-    //echo '</span><span class=back>';
-    echo '<input class="back" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
-    //echo '</span>';
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
-}
+
+
 //$type_name_array = array('单选', '多选', '判断', '填空');
 function output_a_exam($cur_exam, $index){
 	global $type_multi_choice;
@@ -1762,6 +1741,7 @@ function output_a_exam($cur_exam, $index){
 
 function output_objective_exam_array($arr)
 {
+    do_html_header("数组浏览");
     echo '<div class="demo-box">';
     echo '<div class="header">';
     echo '<h2>数组浏览</h2>';
@@ -1773,8 +1753,31 @@ function output_objective_exam_array($arr)
         echo '<br>';
     }
     echo '</div>';
+    do_html_footer();
 }
 
+function preview_objective_exam_stage1($exam_array){
+    do_html_header("试题浏览");
+    echo '<div class="demo-box">';
+    echo '<div class="header">';
+    echo '<h2>试题浏览</h2>';//preview_results
+    echo '<div class="view_result"><a href=\'parser-exam.php?type=array\'>查看Array格式</a></div>';
+    echo '</div>';
+    //echo '$length of exam-array'.count($exam_array).'<br>';
+    for($i=0; $i < count($exam_array); $i++){
+        $cur_exam = $exam_array[$i];
+        output_a_exam($cur_exam, $i);
+    }
+    echo '<div class=footer_button>';
+    echo '<div class=button_box>';
+    echo '<input class="button" type="button" name="insert_to_database" value="没有问题，加入数据库" onclick="location.href =\'insert_to_database.php\'"></input>';
+    echo '</div>';
+    echo '<div class=button_box>';
+    echo '<input class="button" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
+    echo '</div>';
+    echo '</div>';
+    do_html_footer();
+}
 function preview_objective_exam_stage2($exam_array){
     global $type_multi_choice;
     global $type_single_choice;
@@ -1809,6 +1812,7 @@ function preview_objective_exam_stage2($exam_array){
         	    break;
         }
     }
+    do_html_header("试题浏览");
     echo '<div class="demo-box">';
     echo '<div class="header">';
     echo '<h2>试题浏览</h2>';
@@ -1843,6 +1847,7 @@ function preview_objective_exam_stage2($exam_array){
     echo '<input class="button" type="button" name="insert_to_database" value="返回主页" onclick="location.href =\'index.php\'"></input>';
     echo '</div>';
     echo '</div>';
+    do_html_footer();
     //return $exam_array;
 }
 ?>

@@ -7,14 +7,14 @@ mb_internal_encoding('UTF-8');
 do_html_header("parser-results");
 
 session_start();
-$content_array = array();
-$pre_role_array = array();
 if(isset($_POST['view_test_output'])){
     //convert unrecongnized char into ordinary char.
     global $global_is_test_mode;
     $global_is_test_mode = true;
     $_SESSION['content'] = $_POST['content'];
     $content_ori = $_SESSION['content'];//$_POST['content'];
+    $content_array = array();
+    $pre_role_array = array();
     
     if(isset($_POST['exam-type'])){
         //echo 'exam type:'.$_POST['exam-type'].'<br>';
@@ -80,6 +80,8 @@ if(isset($_POST['view_test_output'])){
     }
 }
 if(isset($_POST['preview_results'])){
+    $content_array = array();
+    $pre_role_array = array();
     if(isset($_POST['exam-type'])){
         $_SESSION['content'] = $_POST['content'];
         $content_ori = $_SESSION['content'];//$_POST['content'];
@@ -107,6 +109,7 @@ if(isset($_POST['preview_results'])){
         	    $exam_array = split_rows_by_statement($content_array, $pre_role_array);
                 output_subjective_exam_array($exam_array);
         	    preview_subjective_exam($exam_array);
+                $_SESSION['exam_array'] = $exam_array;
                 break;
         	default:
         	    echo_error('Type '.$_POST['exam-type'].' is not recognized.', 'parser-exam');
@@ -129,7 +132,7 @@ if(isset($_REQUEST['type'])){
     }elseif($view_type == "review"){
         if(isset($_SESSION['exam_array'])){
             $exam_array = $_SESSION['exam_array'];
-            preview_objective_exam_stage1($exam_array);
+            preview_objective_exam_stage2($exam_array);
         }
         else{
             echo 'exam_array is not found.';
