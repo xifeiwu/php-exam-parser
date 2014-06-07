@@ -31,19 +31,19 @@ $reg_row_type_answer_analysis;
 //space befoer can exist or not.
 $reg_question4role = '^ *(?:[0-9]+ *[\.:]|第[0-9]+题 *[\.:]|第[0-9]+题 *[^\.:]|< *[0-9]+ *> *[\.:]).+';
 $reg_option4role = '^(?: *[A-Fa-f][\.:]| *[0-9]\)|[A-Fa-f][^A-Fa-f\.:]).+';
-$reg_answer4role = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*(?::.+?|[^:].+?)';
+$reg_answer4role = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|您的答案|本题正确答案为|答案及解析|答案)\]*(?::.+?|[^:].+?)';
 $reg_analysis4role = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+|[^:].+)';
 
 //space must be placed before question,option,answer for split.
 //$reg_question4split = ' *[0-9]+.*?\.| *第[0-9]+题[:.]| *第[0-9]+题.?';
 $reg_question4split = ' *(?:[0-9]+ *[\.:]|第[0-9]+题 *[\.:]|第[0-9]+题 *[^\.:]|< *[0-9]+ *> *[\.:])';
 $reg_option4split = '[A-Fa-f][\.:]|[0-9]\)|  *[A-Fa-f]|^[A-Fa-f]';
-$reg_answer4split = ' (?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*.*?';//[A-F√×T]
+$reg_answer4split = ' (?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|本题正确答案为|答案及解析|答案)\]*.*?';//[A-F√×T]
 $reg_analysis4split = ' *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*(:.+?|[^:].+?)';
 
 $reg_question4replace = '^ *(?:[0-9]+ *[\.:]|第[0-9]+题 *[\.:]|第[0-9]+题 *[^\.:]|< *[0-9]+ *> *[\.:])';
 $reg_option4replace = '^ *[A-Fa-f][\.:]*|^ *[0-9]\)';
-$reg_answer4replace = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|您的答案|正确答案|答案|本题正确答案为|答案及解析|答案)\]*:*';
+$reg_answer4replace = '^ *(?:[0-9]+ *[\.:]|< *[0-9]+ *> *[\.:])*\[*(?:参考答案|正确答案|标准答案|您的答案|本题正确答案为|答案及解析|答案)\]*:*';
 $reg_analysis4replace = '^ *\[*(?:试题解析|参考解析|答案解析|本题分析|试题点评|本题来源|本题考点|本题解析|解析)\]*:*';
 
 $type_fill_in_the_blank = 0;
@@ -159,13 +159,14 @@ function pre_treat_rows($arr){
         //5-10 ADBCB
         $row = preg_replace('/ *([0-9]+-[0-9]+)/','答案汇总$1',$row);
         //1B 2B 3D 4B 5A 6B 7C 8B 9D 10C
-        //(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-f√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-f√×对错])+ *){1,}
         $row = preg_replace('/((?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-fx√×对错])+ *)(?:[0-9]+ *\.* *(?:正确|错误|[A-Fa-fx√×对错])+ *){2,})/','答案$1',$row);
         //if(preg_match('/^ *(?:[0-9]+\.*[A-Fa-f] *)(?:[0-9]+\.*[A-Fa-f] *){1,}(?:[0-9]+\.*[A-Fa-f] *)$/', $row, $reg)){
         //    $row = '答案汇总'.$row;
         //}
         //2.AC
         $row = preg_replace('/^ *([0-9]+ *\.* *[A-Fa-f]+)$/','答案$1',$row);
+        //1．×[解析]中国银行业监督管理委员会于2012年6月8日颁布的
+        $row = preg_replace('/^ *([0-9]+ *\.* *[x√×]+)/','答案$1',$row);
         //$row = preg_replace('/^ *([0-9]+ *\.* *[A-Fa-f]+)'.$reg_analysis4split.'/','答案$1',$row);
         if(preg_match('/^ *([0-9]+ *\.* *[A-Fa-f]+)'.$reg_analysis4split.'/',$row, $reg)){
             $row = '答案'.$row;
@@ -1021,9 +1022,9 @@ function find_split_answer($arr, $start, $end, &$content_pre, &$role_pre) {
     global $reg_analysis4replace;
     $search = array ();
     $replace = array ();
-    array_push ( $search, '\( *([A-Fa-fT]+) *\)' ); // √×
+    array_push ( $search, '\( *([A-Fa-fT]+) *\)' );
     array_push ( $replace, '( )' );
-    array_push ( $search, '([A-Fa-fT]+)$' ); // √×
+    array_push ( $search, '([A-Fa-fT]+)$' );
     array_push ( $replace, '' );
     for($i = $start; $i < $end; $i ++) {
         $row_tmp = $arr [$i];
